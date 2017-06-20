@@ -2,6 +2,9 @@ version: 1.0.{build}
 platform: x64
 # Do not build on tags (GitHub and BitBucket)
 skip_tags: false
+environment:
+  NPM_TOKEN:
+    secure: bgYLhLG0cR2eMCMyJ3DLdCEEbRe6SFhjIMr0zxrgc4QbfbsGKZgtLeo7p/W6M6+8
 install:
 - nuget install secure-file -ExcludeVersion
 - secure-file\tools\secure-file -decrypt path-to\encrypted-filename.ext.enc -secret %my_secret%
