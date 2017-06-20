@@ -1,10 +1,22 @@
 {
-  "name": "github-release-cloner",
+  "name": "github-release-downloader",
   "version": "1.0.0",
+  "description": "CLI tool to download all release assets from a git repository",
   "main": "src/index.js",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/practicaljs/github-release-downloader.git"
+  },
+  "keywords": [
+    "github",
+    "release",
+    "download",
+    "clone",
+    "assets"
+  ],
   "bin": {
-    "grc": "./bin/grc"
+    "grc": "./bin/grd"
   },
   "dependencies": {
     "axios": "^0.16.2",
