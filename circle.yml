@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/practical
+    docker:
+      - image: darkmarouane/docker-build:0.0.5
+    steps:
+      - checkout
+      - run:
+          name: version
+          command: node --version && npm --version && yarn --version
+      - run:
+          name: generating a whitespaces-free lockfile
+          command: tr -d ' \t\n\r\f' < yarn.lock > ci-cache-key
+      - restore_cache:
+          key: dependency-cache-{{ checksum "ci-cache-key" }}
+      - run:
+          name: yarn-install
+          command: |
+            export NODE_ENV="development"
+            yarn install --frozen-lockfile
+            export NODE_ENV="production"
+      - save_cache:
+          key: dependency-cache-{{ checksum "ci-cache-key" }}
+          paths:
+            - ./node_modules
