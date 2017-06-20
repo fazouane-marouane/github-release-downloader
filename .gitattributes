@@ -1,0 +1,9 @@
+# Config & Documentation
+*.cmd text eol=crlf
+grc text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.lock text eol=lf
+*.js text eol=lf
