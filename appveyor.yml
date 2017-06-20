@@ -1,0 +1,17 @@
+version: 1.0.{build}
+platform: x64
+install:
+- ps: >-
+    Install-Product node 8.1 x64
+
+    node --version
+
+    npm --version
+
+    yarn --version
+cache:
+- "%LOCALAPPDATA%\\Yarn"
+- node_modules
+build_script:
+- cmd: >-
+    yarn install --frozen-lockfile
