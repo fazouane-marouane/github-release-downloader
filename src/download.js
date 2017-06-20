@@ -2,11 +2,16 @@
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
-const { promisify, delay } = require('bluebird')
+const {
+  promisify,
+  delay
+} = require('bluebird')
 const writeFileAsync = promisify(fs.writeFile)
 const mkdirAsync = promisify(fs.mkdir)
 const existsAsync = promisify(function exists2(path, exists2callback) {
-    fs.exists(path, function callbackWrapper(exists) { exists2callback(null, exists) })
+  fs.exists(path, function callbackWrapper(exists) {
+    exists2callback(null, exists)
+  })
 })
 
 async function ensureDirectoryExistence(filePath) {
@@ -16,11 +21,9 @@ async function ensureDirectoryExistence(filePath) {
     const dirname = dirnames.pop()
     if (backTracking) {
       await mkdirAsync(dirname)
-    }
-    else if (await existsAsync(dirname)) {
+    } else if (await existsAsync(dirname)) {
       backTracking = true
-    }
-    else {
+    } else {
       dirnames.push(dirname, path.dirname(dirname))
     }
   }
@@ -44,7 +47,10 @@ module.exports.DownloadsScheduler = class DownloadsScheduler {
   }
 
   async handleDownload(entry) {
-    const { filename, url } = entry
+    const {
+      filename,
+      url
+    } = entry
     console.log('fetching', filename)
     const response = await this.instance.get(url, {
       responseType: 'arraybuffer'
@@ -56,11 +62,10 @@ module.exports.DownloadsScheduler = class DownloadsScheduler {
   }
 
   async enqueueDownloadTask(initial) {
-    this.handleDownload(initial)
+    await this.handleDownload(initial)
     while (this.queue.length > 0) {
       const entry = this.queue.shift()
       await this.handleDownload(entry)
-      await delay(1000)
     }
   }
 

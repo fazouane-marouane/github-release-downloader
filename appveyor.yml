@@ -1,6 +1,10 @@
 version: 1.0.{build}
 platform: x64
+# Do not build on tags (GitHub and BitBucket)
+skip_tags: false
 install:
+- nuget install secure-file -ExcludeVersion
+- secure-file\tools\secure-file -decrypt path-to\encrypted-filename.ext.enc -secret %my_secret%
 - ps: >-
     Install-Product node 8.1 x64
 
@@ -15,3 +19,14 @@ cache:
 build_script:
 - cmd: >-
     yarn install --frozen-lockfile
+
+deploy:
+- ps: |
+    if ($ENV:CONFIGURATION -eq "publish")
+    {
+        "//registry.npmjs.org/:_authToken=`$`{NPM_TOKEN`}" | Out-File (Join-Path $ENV:APPVEYOR_BUILD_FOLDER ".npmrc") -Encoding UTF8
+        iex "npm pack"
+        iex "npm publish"
+    }
+  on:
+    appveyor_repo_tag: true 

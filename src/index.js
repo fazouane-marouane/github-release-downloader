@@ -40,7 +40,10 @@ const yargs = require('yargs')
 function fatalError(error) {
   if (error.response) {
     const status = error.response.status
-    const body = error.response.data
+    let body = error.response.data
+    if (body && body.constructor === Buffer) {
+      body = body.toString('utf8')
+    }
     console.error(`[FATAL] Call to github failed with status ${status}.`, body)
   } else {
     console.error('[FATAL] Error while getting releases.', error)
