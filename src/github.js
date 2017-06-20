@@ -5,7 +5,7 @@ const semver = require('semver')
 const getReleasesQuery = `
 query($cursor: String, $owner: String!, $repository: String!) {
   repository(owner: $owner, name: $repository) {
-    releases(first: 10, after: $cursor) {
+    releases(first: 100, after: $cursor) {
       pageInfo {
         hasNextPage
         endCursor
