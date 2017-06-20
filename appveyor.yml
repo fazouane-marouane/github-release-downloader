@@ -6,8 +6,6 @@ environment:
   NPM_TOKEN:
     secure: bgYLhLG0cR2eMCMyJ3DLdCEEbRe6SFhjIMr0zxrgc4QbfbsGKZgtLeo7p/W6M6+8
 install:
-- nuget install secure-file -ExcludeVersion
-- secure-file\tools\secure-file -decrypt path-to\encrypted-filename.ext.enc -secret %my_secret%
 - ps: >-
     Install-Product node 8.1 x64
 
@@ -23,7 +21,7 @@ build_script:
 - cmd: >-
     yarn install --frozen-lockfile
 
-deploy:
+deploy_script:
 - ps: |
     if ($ENV:CONFIGURATION -eq "publish")
     {
