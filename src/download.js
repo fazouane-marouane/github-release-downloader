@@ -2,10 +2,7 @@
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
-const {
-  promisify,
-  delay
-} = require('bluebird')
+const { promisify } = require('bluebird')
 const writeFileAsync = promisify(fs.writeFile)
 const mkdirAsync = promisify(fs.mkdir)
 const existsAsync = promisify(function exists2(path, exists2callback) {
@@ -58,7 +55,9 @@ module.exports.DownloadsScheduler = class DownloadsScheduler {
     const fullfilename = path.join(this.dest, filename)
     await ensureDirectoryExistence(fullfilename)
     console.log('writing', filename)
+    const etag = response.headers.etag
     await writeFileAsync(fullfilename, response.data)
+    await writeFileAsync(fullfilename + '.etag', etag)
   }
 
   async enqueueDownloadTask(initial) {

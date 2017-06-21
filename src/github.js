@@ -3,9 +3,9 @@ const axios = require('axios')
 const semver = require('semver')
 
 const getReleasesQuery = `
-query($cursor: String, $owner: String!, $repository: String!) {
+query($releaseCursor: String, $assetCursor: String, $owner: String!, $repository: String!) {
   repository(owner: $owner, name: $repository) {
-    releases(first: 100, after: $cursor) {
+    releases(first: 1, after: $releaseCursor) {
       pageInfo {
         hasNextPage
         endCursor
@@ -15,7 +15,11 @@ query($cursor: String, $owner: String!, $repository: String!) {
         tag {
           name
         }
-        releaseAssets(first: 100) {
+        releaseAssets(first: 10, after: $assetCursor) {
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
           nodes {
             name
             url
@@ -38,45 +42,58 @@ module.exports.GitHub = class GitHub {
     })
   }
 
-  async getRawReleases(owner, repository) {
+  async * getRawReleases(owner, repository, min_version) {
     console.info(`getting releases for ${owner}/${repository}`)
-    let rawReleaseInfos = []
-    let hasNextPage = true
-    let endCursor = null
-    while (hasNextPage) {
-      const response = await this.instance.post('/graphql', {
-        query: getReleasesQuery,
-        variables: {
-          owner: owner,
-          repository: repository,
-          cursor: endCursor
+    let releaseHasNextPage = true
+    let releaseEndCursor = null
+    while (releaseHasNextPage) {
+      let assetHasNextPage = true
+      let assetEndCursor = null
+      let releases = null
+      while (assetHasNextPage) {
+        const response = await this.instance.post('/graphql', {
+          query: getReleasesQuery,
+          variables: {
+            owner: owner,
+            repository: repository,
+            releaseCursor: releaseEndCursor,
+            assetCursor: assetEndCursor
+          }
+        })
+        if (!response.data.data) {
+          throw {
+            response
+          }
         }
-      })
-      if(!response.data.data) {
-        throw {response}
+        releases = response.data.data.repository.releases
+        const releaseInfo = releases.nodes[0] // only one release at a time
+        if (!releaseInfo.tag.name || !semver.gte(releaseInfo.tag.name, min_version)) {
+          // ignore this release altogether
+          break
+        }
+        assetHasNextPage = releaseInfo.releaseAssets.pageInfo.hasNextPage
+        assetEndCursor = releaseInfo.releaseAssets.pageInfo.endCursor
+        yield {
+          name: releaseInfo.tag.name,
+          assets: releaseInfo.releaseAssets.nodes
+        }
       }
-      const releases = response.data.data.repository.releases
-      rawReleaseInfos.push(...releases.nodes)
-      hasNextPage = releases.pageInfo.hasNextPage
-      endCursor = releases.pageInfo.endCursor
+      releaseHasNextPage = releases.pageInfo.hasNextPage
+      releaseEndCursor = releases.pageInfo.endCursor
     }
-    return rawReleaseInfos
   }
 
-  async getReleases(owner, repository, min_version = 'v0.0.0-alpha', asset_filter = /^(win32-ia32|win32-x64|linux-ia32|linux-x64)/) {
-    const rawReleases = await this.getRawReleases(owner, repository)
-    return rawReleases.map(rawRelease => {
-        // reformat releases and run the filter on assets
-        const assets = rawRelease.releaseAssets.nodes
-        const filteredAssets = assets.filter(asset => asset_filter.test(asset.name) && asset.url)
-        return {
-          name: rawRelease.tag.name,
+  async * getReleases(owner, repository, min_version = 'v0.0.0-alpha', asset_filter = /^(win32-ia32|win32-x64|linux-ia32|linux-x64)/) {
+    for await (const release of this.getRawReleases(owner, repository, min_version)) {
+      // run the filter on assets
+      const filteredAssets = release.assets.filter(asset => asset_filter.test(asset.name) && asset.url)
+      if (filteredAssets.length > 0) {
+        // only keep meaningful releases (ones with non empty assets list)
+        yield {
+          name: release.name,
           assets: filteredAssets
         }
-      })
-      .filter(release => {
-        // only keep meaningful releases (ones with a name & a non empty assets list)
-        return release.name && semver.gte(release.name, min_version) && release.assets.length > 0
-      })
+      }
+    }
   }
 }

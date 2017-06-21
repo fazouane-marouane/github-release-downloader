@@ -1,4 +1,5 @@
 'use strict'
+require("babel-polyfill")
 const path = require('path')
 const {
   GitHub
@@ -56,8 +57,7 @@ async function main(argv) {
     const api = new GitHub(argv.token)
     const dest = path.join(argv.output, argv.owner, argv.repository)
     const downloader = new DownloadsScheduler(dest, argv.parallel)
-    const releases = await api.getReleases(argv.owner, argv.repository, argv.minVersion)
-    for (const release of releases) {
+    for await (const release of api.getReleases(argv.owner, argv.repository, argv.minVersion)) {
       console.log(`releases ${release.name}\tassets count: ${release.assets.length}`)
       for (const asset of release.assets) {
         downloader.enqueue({

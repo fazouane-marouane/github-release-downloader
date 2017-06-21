@@ -1,0 +1,9 @@
+{
+  "presets": [
+    "es2017",
+    "stage-3"
+  ],
+  "ignore": [
+    "bin/**/*"
+  ]
+}
