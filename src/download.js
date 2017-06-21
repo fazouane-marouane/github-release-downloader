@@ -108,7 +108,7 @@ module.exports.DownloadsScheduler = class DownloadsScheduler {
     await ensureDirectoryExistence(fullfilename)
     console.log('writing', filename)
     const etag = response.headers.etag
-    await writeFileAsync(fullfilename, response.data)
+    await writeFileAsync(fullfilename, response.data, "binary")
     await writeFileAsync(etagFilename, etag)
   }
 
