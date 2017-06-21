@@ -61,6 +61,7 @@ async function main(argv) {
       console.log(`releases ${release.name}\tassets count: ${release.assets.length}`)
       for (const asset of release.assets) {
         downloader.enqueue({
+          id: asset.id,
           filename: `${release.name}/${asset.name}`,
           url: asset.url
         })

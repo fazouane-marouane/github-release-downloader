@@ -21,6 +21,7 @@ query($releaseCursor: String, $assetCursor: String, $owner: String!, $repository
             endCursor
           }
           nodes {
+            id
             name
             url
           }
