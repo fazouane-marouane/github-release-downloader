@@ -1,6 +1,6 @@
 {
   "name": "github-release-downloader",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "CLI tool to download all release assets from a git repository",
   "main": "src/index.js",
   "license": "MIT",
@@ -16,7 +16,7 @@
     "assets"
   ],
   "bin": {
-    "grc": "./bin/grd"
+    "grd": "./bin/grd"
   },
   "dependencies": {
     "axios": "^0.16.2",
