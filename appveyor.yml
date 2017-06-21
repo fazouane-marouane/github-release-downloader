@@ -24,8 +24,9 @@ build_script:
 
 deploy_script:
 - ps: |
-    "//registry.npmjs.org/:_authToken=`$`{NPM_TOKEN`}" | Out-File (Join-Path $ENV:APPVEYOR_BUILD_FOLDER ".npmrc") -Encoding UTF8
-    iex "npm pack"
-    iex "npm publish"
-  on:
-    appveyor_repo_tag: true
+    if ($ENV:APPVEYOR_REPO_TAG -eq "publish")
+    {
+        "//registry.npmjs.org/:_authToken=`$`{NPM_TOKEN`}" | Out-File (Join-Path $ENV:APPVEYOR_BUILD_FOLDER ".npmrc") -Encoding UTF8
+        iex "npm pack"
+        iex "npm publish"
+    }
