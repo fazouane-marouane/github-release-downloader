@@ -19,7 +19,11 @@ jobs:
           command: |
             export NODE_ENV="development"
             yarn install --frozen-lockfile
+      - run:
+          name: build
+          command: |
             export NODE_ENV="production"
+            yarn run build
       - save_cache:
           key: dependency-cache-{{ checksum "ci-cache-key" }}
           paths:

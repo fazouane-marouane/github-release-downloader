@@ -4,6 +4,7 @@
     "stage-3"
   ],
   "ignore": [
-    "bin/**/*"
+    "bin/**/*",
+    "build/**/*"
   ]
 }
