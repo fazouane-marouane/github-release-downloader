@@ -1,8 +1,15 @@
 'use strict'
+const https = require('https')
 const axios = require('axios')
 const fs = require('fs')
 const path = require('path')
-const { promisify } = require('bluebird')
+const {
+  URL
+} = require('url');
+const {
+  promisify
+} = require('bluebird')
+const readFileAsync = promisify(fs.readFile)
 const writeFileAsync = promisify(fs.writeFile)
 const mkdirAsync = promisify(fs.mkdir)
 const existsAsync = promisify(function exists2(path, exists2callback) {
@@ -26,17 +33,52 @@ async function ensureDirectoryExistence(filePath) {
   }
 }
 
+function getHeaderWithoutDownloading(url, headers) {
+  return new Promise((resolve, reject) => {
+    const urlObject = new URL(url)
+    const req = https.request({
+      method: 'GET',
+      protocol: urlObject.protocol,
+      hostname: urlObject.hostname,
+      path: urlObject.pathname + urlObject.search,
+      headers: headers
+    }, (res) => {
+      const {
+        statusCode
+      } = res
+
+      if (statusCode !== 200) {
+        let rawData = '';
+        res.on('data', (chunk) => {
+          rawData += chunk;
+        })
+        res.on('end', () => {
+          const error = new Error(`Request Failed. Status Code: ${statusCode}\n${rawData}`)
+          return reject(error)
+        })
+      } else {
+        resolve(res.headers)
+      }
+    }).on('error', (e) => {
+      reject(e)
+    })
+    req.end()
+  })
+}
+
 module.exports.DownloadsScheduler = class DownloadsScheduler {
   constructor(dest, parallelism = 1) {
-    this.instance = axios.create({
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) \
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) \
         AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-      }
+    }
+    this.instance = axios.create({
+      headers: headers
     })
     this.dest = dest
     this.parallelism = parallelism
     this.queue = []
+    this.getEtag = (url) => getHeaderWithoutDownloading(url, headers)
   }
 
   enqueue(entry) {
@@ -48,16 +90,26 @@ module.exports.DownloadsScheduler = class DownloadsScheduler {
       filename,
       url
     } = entry
+    const fullfilename = path.join(this.dest, filename)
+    const etagFilename = fullfilename + '.etag'
+    if (await existsAsync(fullfilename) && await existsAsync(etagFilename)) {
+      const oldEtag = (await readFileAsync(etagFilename)).toString()
+      const headers = await this.getEtag(url)
+      const newEtag = headers.etag
+      if (oldEtag === newEtag) {
+        console.log(`file ${filename} is already up-to-date.`)
+        return
+      }
+    }
     console.log('fetching', filename)
     const response = await this.instance.get(url, {
       responseType: 'arraybuffer'
     })
-    const fullfilename = path.join(this.dest, filename)
     await ensureDirectoryExistence(fullfilename)
     console.log('writing', filename)
     const etag = response.headers.etag
     await writeFileAsync(fullfilename, response.data)
-    await writeFileAsync(fullfilename + '.etag', etag)
+    await writeFileAsync(etagFilename, etag)
   }
 
   async enqueueDownloadTask(initial) {
