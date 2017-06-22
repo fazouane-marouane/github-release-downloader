@@ -34,6 +34,7 @@ query($releaseCursor: String, $assetCursor: String, $owner: String!, $repository
 module.exports.GitHub = class GitHub {
   constructor(token) {
     this.instance = axios.create({
+      timeout: 60 * 1000,
       baseURL: 'https://api.github.com',
       headers: {
         'Authorization': `bearer ${token}`,
