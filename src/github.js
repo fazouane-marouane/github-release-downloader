@@ -84,7 +84,7 @@ module.exports.GitHub = class GitHub {
     }
   }
 
-  async * getReleases(owner, repository, min_version = 'v0.0.0-alpha', asset_filter = /^(win32-ia32|win32-x64|linux-ia32|linux-x64)/) {
+  async * getReleases(owner, repository, min_version, asset_filter) {
     for await (const release of this.getRawReleases(owner, repository, min_version)) {
       // run the filter on assets
       const filteredAssets = release.assets.filter(asset => asset_filter.test(asset.name) && asset.url)

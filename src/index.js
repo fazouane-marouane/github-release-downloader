@@ -28,7 +28,11 @@ const yargs = require('yargs')
   })
   .option('min-version', {
     alias: 'm',
-    describe: 'minimum semver version to consider'
+    describe: 'minimum semver version to consider',
+    default: 'v0.0.0-alpha'
+  })
+  .option('filter-asset', {
+    describe: 'the assets we\'re interested in keeping'
   })
   .option('parallel', {
     alias: 'p',
@@ -36,6 +40,9 @@ const yargs = require('yargs')
     default: 3
   })
   .coerce(['output'], path.resolve)
+  .coerce(['filter-asset'], (arg) => {
+    return new RegExp(arg)
+  })
   .help()
 
 function fatalError(error) {
@@ -57,7 +64,7 @@ async function main(argv) {
     const api = new GitHub(argv.token)
     const dest = path.join(argv.output, argv.owner, argv.repository)
     const downloader = new DownloadsScheduler(dest, argv.parallel)
-    for await (const release of api.getReleases(argv.owner, argv.repository, argv.minVersion)) {
+    for await (const release of api.getReleases(argv.owner, argv.repository, argv.minVersion, argv.filterAsset)) {
       console.log(`releases ${release.name}\tassets count: ${release.assets.length}`)
       for (const asset of release.assets) {
         downloader.enqueue({

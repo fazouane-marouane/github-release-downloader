@@ -42,3 +42,11 @@ You can ofcourse specify a more appropriate number if you like:
 ```bash
 grd --token <your github api token> --owner sass --repository node-sass --parallel 10
 ```
+
+## 3. Filter assets
+
+By default you get all assets available. No filter is applied. Let's imagine that you're only interested in linux & windows binaries. You would use --filter-asset.
+
+```bash
+grd --token <your github api token> --owner sass --repository node-sass --filter-asset '^(win32-ia32|win32-x64|linux-ia32|linux-x64)'
+```
