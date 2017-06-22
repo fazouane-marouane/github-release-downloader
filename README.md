@@ -26,6 +26,8 @@ To download all node-sass's binaries for versions above v4.0.0 you would do
 grd --token <your github api token> --owner sass --repository node-sass --min-version v4.0.0
 ```
 
+> **PS**: to get a personal api token you'll need to [generate one](https://github.com/blog/1509-personal-api-tokens). No special right is required.
+
 # Advanced usages
 
 ## 1. Custom download path
