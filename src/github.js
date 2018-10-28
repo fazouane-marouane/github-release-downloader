@@ -1,6 +1,6 @@
-'use strict'
-const axios = require('axios')
-const semver = require('semver')
+"use strict";
+import axios from "axios";
+import semver from "semver";
 
 const getReleasesQuery = `
 query($releaseCursor: String, $assetCursor: String, $owner: String!, $repository: String!) {
@@ -29,31 +29,32 @@ query($releaseCursor: String, $assetCursor: String, $owner: String!, $repository
       }
     }
   }
-}`
+}`;
 
-module.exports.GitHub = class GitHub {
+export class GitHub {
   constructor(token) {
     this.instance = axios.create({
       timeout: 60 * 1000,
-      baseURL: 'https://api.github.com',
+      baseURL: "https://api.github.com",
       headers: {
-        'Authorization': `bearer ${token}`,
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) \
-        AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+        Authorization: `bearer ${token}`,
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) \
+        AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
       }
-    })
+    });
   }
 
-  async * getRawReleases(owner, repository, min_version) {
-    console.info(`getting releases for ${owner}/${repository}`)
-    let releaseHasNextPage = true
-    let releaseEndCursor = null
+  async *getRawReleases(owner, repository, min_version) {
+    console.info(`getting releases for ${owner}/${repository}`);
+    let releaseHasNextPage = true;
+    let releaseEndCursor = null;
     while (releaseHasNextPage) {
-      let assetHasNextPage = true
-      let assetEndCursor = null
-      let releases = null
+      let assetHasNextPage = true;
+      let assetEndCursor = null;
+      let releases = null;
       while (assetHasNextPage) {
-        const response = await this.instance.post('/graphql', {
+        const response = await this.instance.post("/graphql", {
           query: getReleasesQuery,
           variables: {
             owner: owner,
@@ -61,40 +62,49 @@ module.exports.GitHub = class GitHub {
             releaseCursor: releaseEndCursor,
             assetCursor: assetEndCursor
           }
-        })
+        });
         if (!response.data.data) {
           throw {
             response
-          }
+          };
         }
-        releases = response.data.data.repository.releases
-        const releaseInfo = releases.nodes[0] // only one release at a time
-        if (!releaseInfo.tag.name || !semver.gte(releaseInfo.tag.name, min_version)) {
+        releases = response.data.data.repository.releases;
+        const releaseInfo = releases.nodes[0]; // only one release at a time
+        if (
+          !releaseInfo.tag.name ||
+          !semver.gte(releaseInfo.tag.name, min_version)
+        ) {
           // ignore this release altogether
-          break
+          break;
         }
-        assetHasNextPage = releaseInfo.releaseAssets.pageInfo.hasNextPage
-        assetEndCursor = releaseInfo.releaseAssets.pageInfo.endCursor
+        assetHasNextPage = releaseInfo.releaseAssets.pageInfo.hasNextPage;
+        assetEndCursor = releaseInfo.releaseAssets.pageInfo.endCursor;
         yield {
           name: releaseInfo.tag.name,
           assets: releaseInfo.releaseAssets.nodes
-        }
+        };
       }
-      releaseHasNextPage = releases.pageInfo.hasNextPage
-      releaseEndCursor = releases.pageInfo.endCursor
+      releaseHasNextPage = releases.pageInfo.hasNextPage;
+      releaseEndCursor = releases.pageInfo.endCursor;
     }
   }
 
-  async * getReleases(owner, repository, min_version, asset_filter) {
-    for await (const release of this.getRawReleases(owner, repository, min_version)) {
+  async *getReleases(owner, repository, min_version, asset_filter) {
+    for await (const release of this.getRawReleases(
+      owner,
+      repository,
+      min_version
+    )) {
       // run the filter on assets
-      const filteredAssets = release.assets.filter(asset => asset_filter.test(asset.name) && asset.url)
+      const filteredAssets = release.assets.filter(
+        asset => asset_filter.test(asset.name) && asset.url
+      );
       if (filteredAssets.length > 0) {
         // only keep meaningful releases (ones with non empty assets list)
         yield {
           name: release.name,
           assets: filteredAssets
-        }
+        };
       }
     }
   }

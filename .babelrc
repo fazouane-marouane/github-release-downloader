@@ -1,10 +1,4 @@
 {
-  "presets": [
-    "es2017",
-    "stage-3"
-  ],
-  "ignore": [
-    "bin/**/*",
-    "build/**/*"
-  ]
+  "presets": ["@babel/preset-env"],
+  "ignore": ["bin/**/*", "build/**/*"]
 }

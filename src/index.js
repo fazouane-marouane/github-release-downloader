@@ -1,9 +1,12 @@
 "use strict";
-require("babel-polyfill");
-const path = require("path");
-const { GitHub } = require("./github");
-const { DownloadsScheduler } = require("./download");
-const yargs = require("yargs")
+import "core-js/shim"; // included < Stage 4 proposals
+import "regenerator-runtime/runtime";
+import path from "path";
+import { GitHub } from "./github";
+import { DownloadsScheduler } from "./download";
+import yargs from "yargs";
+
+yargs
   .usage("$0 <cmd> [args]")
   .option("token", {
     describe: "Github's oauth2 token to communicate with its apis",
