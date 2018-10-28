@@ -2,15 +2,11 @@
 import axios from "axios";
 import fs from "fs";
 import path from "path";
-import { promisify } from "bluebird";
+import { promisify } from "util";
 const readFileAsync = promisify(fs.readFile);
 const writeFileAsync = promisify(fs.writeFile);
 const mkdirAsync = promisify(fs.mkdir);
-const existsAsync = promisify(function exists2(path, exists2callback) {
-  fs.exists(path, function callbackWrapper(exists) {
-    exists2callback(null, exists);
-  });
-});
+const existsAsync = promisify(fs.exists);
 
 async function ensureDirectoryExistence(filePath) {
   const dirnames = [path.dirname(filePath)];
