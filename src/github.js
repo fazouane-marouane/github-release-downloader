@@ -72,7 +72,10 @@ export class GitHub {
         const releaseInfo = releases.nodes[0]; // only one release at a time
         if (
           !releaseInfo.tag.name ||
-          !semver.gte(releaseInfo.tag.name, min_version)
+          !semver.gte(
+            semver.coerce(releaseInfo.tag.name),
+            semver.coerce(min_version)
+          )
         ) {
           // ignore this release altogether
           break;
