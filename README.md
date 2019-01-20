@@ -74,3 +74,15 @@ grd --token <your github api token> --owner sass --repository node-sass --match-
 # Download all win23-x64 assets of all alpha versions since v1
 grd --token <your github api token> --owner sass --repository node-sass --min-version "v1.0.0-alpha" --match-version "alpha" --filter-asset "^win32-x64"
 ```
+
+## 5. Using a HTTP/HTTPS proxy
+
+If you're behind a http/https proxy, you can also use it with `grd` with those parameters:
+
+```bash
+# Use the defaut proxy ($http_proxy or $https_proxy)
+grd --token <your github api token> --owner sass --repository node-sass --proxy
+
+# Use an explicit proxy
+grd --token <your github api token> --owner sass --repository node-sass --proxy "https://username:password@proxy:port/"
+```

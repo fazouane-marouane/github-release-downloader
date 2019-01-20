@@ -32,7 +32,7 @@ yargs
   })
   .option("match-version", {
     alias: "mv",
-    describe: "minimum semver version to consider",
+    describe: "regex of versions to consider",
     default: ".*"
   })
   .option("filter-asset", {
@@ -44,9 +44,19 @@ yargs
     describe: "number of parallel downloads",
     default: 3
   })
+  .option("proxy", {
+    describe:
+      "proxy to use, if any. Will use $https_proxy or $http_proxy if no value has been passed.",
+    default: false
+  })
   .coerce(["output"], path.resolve)
   .coerce(["match-version", "filter-asset"], arg => {
     return new RegExp(arg);
+  })
+  .coerce(["proxy"], arg => {
+    return arg === true
+      ? process.env.https_proxy || process.env.http_proxy
+      : arg;
   })
   .help();
 
@@ -59,16 +69,19 @@ function fatalError(error) {
     }
     console.error(`[FATAL] Call to github failed with status ${status}.`, body);
   } else {
-    console.error("[FATAL] Error while getting releases.", error);
+    console.error("[FATAL] Error while getting releases.", error.message);
   }
   process.exit(1);
 }
 
 async function main(argv) {
   try {
-    const api = new GitHub(argv.token);
+    if (argv.proxy) {
+      console.log("Will try using the proxy", argv.proxy);
+    }
+    const api = new GitHub(argv.token, argv.proxy);
     const dest = path.join(argv.output, argv.owner, argv.repository);
-    const downloader = new DownloadsScheduler(dest, argv.parallel);
+    const downloader = new DownloadsScheduler(dest, argv.proxy, argv.parallel);
     for await (const release of api.getReleases(
       argv.owner,
       argv.repository,
