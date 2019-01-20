@@ -86,3 +86,5 @@ grd --token <your github api token> --owner sass --repository node-sass --proxy
 # Use an explicit proxy
 grd --token <your github api token> --owner sass --repository node-sass --proxy "https://username:password@proxy:port/"
 ```
+
+Other types of proxies are not supported.
