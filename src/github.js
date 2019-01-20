@@ -45,7 +45,7 @@ export class GitHub {
     });
   }
 
-  async *getRawReleases(owner, repository, min_version) {
+  async *getRawReleases(owner, repository, matchVersion, min_version) {
     console.info(`getting releases for ${owner}/${repository}`);
     let releaseHasNextPage = true;
     let releaseEndCursor = null;
@@ -75,7 +75,8 @@ export class GitHub {
           !semver.gte(
             semver.coerce(releaseInfo.tag.name),
             semver.coerce(min_version)
-          )
+          ) ||
+          !matchVersion.test(releaseInfo.tag.name)
         ) {
           // ignore this release altogether
           break;
@@ -92,10 +93,17 @@ export class GitHub {
     }
   }
 
-  async *getReleases(owner, repository, min_version, asset_filter) {
+  async *getReleases(
+    owner,
+    repository,
+    matchVersion,
+    min_version,
+    asset_filter
+  ) {
     for await (const release of this.getRawReleases(
       owner,
       repository,
+      matchVersion,
       min_version
     )) {
       // run the filter on assets

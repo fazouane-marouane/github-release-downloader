@@ -30,6 +30,11 @@ yargs
     describe: "minimum semver version to consider",
     default: "v0.0.0-alpha"
   })
+  .option("match-version", {
+    alias: "mv",
+    describe: "minimum semver version to consider",
+    default: ".*"
+  })
   .option("filter-asset", {
     describe: "the assets we're interested in keeping",
     default: ".*"
@@ -40,7 +45,7 @@ yargs
     default: 3
   })
   .coerce(["output"], path.resolve)
-  .coerce(["filter-asset"], arg => {
+  .coerce(["match-version", "filter-asset"], arg => {
     return new RegExp(arg);
   })
   .help();
@@ -67,6 +72,7 @@ async function main(argv) {
     for await (const release of api.getReleases(
       argv.owner,
       argv.repository,
+      argv.matchVersion,
       argv.minVersion,
       argv.filterAsset
     )) {

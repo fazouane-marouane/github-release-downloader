@@ -1,4 +1,5 @@
 # github-release-downloader
+
 [![npm version](https://badge.fury.io/js/github-release-downloader.svg)](https://badge.fury.io/js/github-release-downloader)
 [![Build status](https://ci.appveyor.com/api/projects/status/4fdxoq06aq002end/branch/master?svg=true)](https://ci.appveyor.com/project/practicaljs/github-release-downloader/branch/master)
 [![CircleCI](https://circleci.com/gh/practicaljs/github-release-downloader/tree/master.svg?style=svg)](https://circleci.com/gh/practicaljs/github-release-downloader/tree/master)
@@ -49,4 +50,27 @@ By default you get all assets available. No filter is applied. Let's imagine tha
 
 ```bash
 grd --token <your github api token> --owner sass --repository node-sass --filter-asset '^(win32-ia32|win32-x64|linux-ia32|linux-x64)'
+```
+
+## 4. Filter versions
+
+You have two possibilities here:
+
+`--min-version` and you'd download all versions starting from the argument (this respects semver).
+
+```bash
+grd --token <your github api token> --owner sass --repository node-sass --min-version "v4.0.0"
+```
+
+or you can use `--match-version` and pass a regexp. Here are some examples
+
+```bash
+# Download only the version v4.0.0
+grd --token <your github api token> --owner sass --repository node-sass --match-version "^v4\.0\.0$"
+
+# Download only all versions v4.0.x v4.1.x v4.2.x
+grd --token <your github api token> --owner sass --repository node-sass --match-version "^v4\.(0|1|2)\."
+
+# Download all win23-x64 assets of all alpha versions since v1
+grd --token <your github api token> --owner sass --repository node-sass --min-version "v1.0.0-alpha" --match-version "alpha" --filter-asset "^win32-x64"
 ```
