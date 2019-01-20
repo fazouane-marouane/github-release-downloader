@@ -32,7 +32,7 @@ query($releaseCursor: String, $assetCursor: String, $owner: String!, $repository
 }`;
 
 export class GitHub {
-  constructor(token) {
+  constructor(token, proxy) {
     this.instance = axios.create({
       timeout: 60 * 1000,
       baseURL: "https://api.github.com",
@@ -41,7 +41,8 @@ export class GitHub {
         "User-Agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) \
         AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"
-      }
+      },
+      ...(proxy ? { proxy } : null)
     });
   }
 
