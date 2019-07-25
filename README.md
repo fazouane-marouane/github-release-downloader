@@ -35,6 +35,10 @@ grd --token <your github api token> --owner sass --repository node-sass --min-ve
 
 By default the download path is the path from where you ran `node`. But it's easy to override this with the the option `--output` (or `-o` if you feel that life is too short).
 
+```bash
+grd --token <your github api token> --owner sass --repository node-sass --output local-cache
+```
+
 ## 2. Parallel download
 
 By default downloads are launched in parrallel; 3 downloads at a time.
@@ -88,3 +92,12 @@ grd --token <your github api token> --owner sass --repository node-sass --proxy 
 ```
 
 Other types of proxies are not supported.
+
+## 6. Ignore missing assets
+
+Sometimes, GitHub releases may reference assets that are no longer available. Maybe the asset has since been deleted, but GitHub's api still references it. By default, since v1.2.0, if we the asset that we try to download is missing a warning is logged and we carry on with the other tasks. You can override this behavior if you'd prefer to raise a fatal error and stop the process by passing `--no-ignore-missing-assets`.
+
+```bash
+#
+grd --token <your github api token> --owner sass --repository node-sass --match-version "^v4.6.1" --filter-asset "win32-ia32-45_binding.pdb" --no-ignore-missing-assets
+```

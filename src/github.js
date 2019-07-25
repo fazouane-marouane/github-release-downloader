@@ -72,6 +72,7 @@ export class GitHub {
         releases = response.data.data.repository.releases;
         const releaseInfo = releases.nodes[0]; // only one release at a time
         if (
+          !releaseInfo ||
           !releaseInfo.tag.name ||
           !semver.gte(
             semver.coerce(releaseInfo.tag.name),
