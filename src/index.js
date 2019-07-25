@@ -49,7 +49,7 @@ yargs
       "proxy to use, if any. Will use $https_proxy or $http_proxy if no value has been passed.",
     default: false
   })
-  .option("ignoreMissingAssets", {
+  .option("ignore-missing-assets", {
     describe:
       "When assets are missing, continue the task without stopping the process.",
     default: true
