@@ -1,5 +1,5 @@
 "use strict";
-import "core-js/shim"; // included < Stage 4 proposals
+import "core-js/stable"; // included < Stage 4 proposals
 import "regenerator-runtime/runtime";
 import path from "path";
 import { GitHub } from "./github";
