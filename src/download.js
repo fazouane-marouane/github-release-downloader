@@ -14,7 +14,13 @@ async function ensureDirectoryExistence(filePath) {
   while (dirnames.length > 0) {
     const dirname = dirnames.pop();
     if (backTracking) {
-      await mkdirAsync(dirname);
+      try {
+        await mkdirAsync(dirname);
+      } catch (e) {
+        if (e.code !== "EEXIST") {
+          throw e;
+        }
+      }
     } else if (await existsAsync(dirname)) {
       backTracking = true;
     } else {
@@ -24,7 +30,7 @@ async function ensureDirectoryExistence(filePath) {
 }
 
 export class DownloadsScheduler {
-  constructor(dest, proxy, parallelism = 1) {
+  constructor(dest, proxy, parallelism = 1, ignoreMissingAssets = true) {
     this.instance = axios.create({
       timeout: 5 * 60 * 1000,
       headers: {
@@ -37,6 +43,7 @@ export class DownloadsScheduler {
     this.dest = dest;
     this.parallelism = parallelism;
     this.queue = [];
+    this.ignoreMissingAssets = ignoreMissingAssets;
   }
 
   enqueue(entry) {
@@ -64,11 +71,38 @@ export class DownloadsScheduler {
     await writeFileAsync(idFilename, entry.id);
   }
 
+  async handleDownloadTask(entry) {
+    for (let attempts = 1; attempts <= 3; attempts++) {
+      try {
+        await this.handleDownload(entry);
+        break;
+      } catch (e) {
+        if (e.code === "ENOTFOUND" && attempts < 3) {
+          console.warn(
+            `[ERROR] Couldn't not download ${
+              entry.filename
+            }. We'll wait for a few seconds. (attempt: #${attempts})`
+          );
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        } else if (
+          e.response &&
+          e.response.status === 404 &&
+          this.ignoreMissingAssets
+        ) {
+          console.warn(`[WARNING] Missing asset: ${entry.filename} !`);
+          break;
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
   async enqueueDownloadTask(initialEntry) {
-    await this.handleDownload(initialEntry);
+    await this.handleDownloadTask(initialEntry);
     while (this.queue.length > 0) {
       const entry = this.queue.shift();
-      await this.handleDownload(entry);
+      await this.handleDownloadTask(entry);
     }
   }
 

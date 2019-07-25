@@ -49,6 +49,11 @@ yargs
       "proxy to use, if any. Will use $https_proxy or $http_proxy if no value has been passed.",
     default: false
   })
+  .option("ignoreMissingAssets", {
+    describe:
+      "When assets are missing, continue the task without stopping the process.",
+    default: true
+  })
   .coerce(["output"], path.resolve)
   .coerce(["match-version", "filter-asset"], arg => {
     return new RegExp(arg);
@@ -81,7 +86,12 @@ async function main(argv) {
     }
     const api = new GitHub(argv.token, argv.proxy);
     const dest = path.join(argv.output, argv.owner, argv.repository);
-    const downloader = new DownloadsScheduler(dest, argv.proxy, argv.parallel);
+    const downloader = new DownloadsScheduler(
+      dest,
+      argv.proxy,
+      argv.parallel,
+      argv.ignoreMissingAssets
+    );
     for await (const release of api.getReleases(
       argv.owner,
       argv.repository,
