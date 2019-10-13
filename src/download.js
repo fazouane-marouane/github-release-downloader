@@ -30,9 +30,9 @@ async function ensureDirectoryExistence(filePath) {
 }
 
 export class DownloadsScheduler {
-  constructor(dest, proxy, parallelism, ignoreMissingAssets) {
+  constructor(dest, proxy, timeout, parallelism, ignoreMissingAssets) {
     this.instance = axios.create({
-      timeout: 5 * 60 * 1000,
+      timeout: timeout * 1000,
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) \
