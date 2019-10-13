@@ -1,6 +1,6 @@
 {
   "name": "github-release-downloader",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "CLI tool to download all release assets from a git repository",
   "main": "src/index.js",
   "license": "MIT",
