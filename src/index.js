@@ -49,6 +49,11 @@ yargs
       "proxy to use, if any. Will use $https_proxy or $http_proxy if no value has been passed.",
     default: false
   })
+  .option("timeout", {
+    alias: "t",
+    describe: "timeout for download asset requests (in seconds)",
+    default: 5 * 60
+  })
   .option("ignore-missing-assets", {
     describe:
       "When assets are missing, continue the task without stopping the process.",
@@ -89,8 +94,10 @@ async function main(argv) {
     const downloader = new DownloadsScheduler(
       dest,
       argv.proxy,
+      argv.timeout,
       argv.parallel,
-      argv.ignoreMissingAssets
+      argv.ignoreMissingAssets,
+
     );
     for await (const release of api.getReleases(
       argv.owner,
